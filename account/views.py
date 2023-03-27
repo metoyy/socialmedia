@@ -1,17 +1,19 @@
 import uuid
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 from rest_framework import permissions
 from rest_framework.decorators import api_view
-from rest_framework.generics import GenericAPIView, ListAPIView
+from rest_framework.generics import *
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from account import serializers
-from account.models import CustomUser
+from account.models import CustomUser, FriendRequest
 from account.sendmail import *
+from account.permissions import *
 
 User = get_user_model()
 
@@ -51,6 +53,7 @@ class LoginView(TokenObtainPairView):
 class UserListApiView(ListAPIView):
     queryset = User.objects.all()
     serializer_class = serializers.UserSerializer
+    permission_classes = permissions.IsAuthenticated,
 
 
 class PasswordResetView(APIView):
@@ -72,7 +75,7 @@ class PasswordResetView(APIView):
         return Response({'msg': 'Confirmation code sent!'}, status=200)
 
     @staticmethod
-    def put(self, request):
+    def put(request):
         try:
             serializer = serializers.PasswordResetSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
@@ -81,3 +84,51 @@ class PasswordResetView(APIView):
         except User.DoesNotExist:
             return Response({'msg': 'Code expired or invalid!'}, status=400)
         return Response({'msg': 'Successfully changed password!'}, status=200)
+
+
+class DetailUser(APIView):
+
+    permission_classes = permissions.IsAuthenticated,
+
+    def get(self, request, pk):
+        user = User.objects.get(id=pk)
+        serializer = serializers.UserSerializer(instance=user)
+        return Response(serializer.data, status=200)
+
+    def put(self, request, pk):
+        try:
+            if request.user.id != pk:
+                return Response({'msg': 'You cant change other user\'s data!'}, status=400)
+            user = User.objects.get(id=pk)
+            serializer = serializers.UserModifySerializer(instance=user, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=200)
+        except User.DoesNotExist:
+            return Response({'msg': 'User not found'}, status=404)
+
+    def patch(self, request, pk):
+        try:
+            user = User.objects.get(id=pk)
+            if request.user.id != pk:
+                return Response({'msg': 'You cant change other user\'s data!'}, status=400)
+            serializer = serializers.UserModifySerializer(instance=user, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+        except User.DoesNotExist:
+            return Response({'msg': 'User not found'}, status=404)
+
+
+@login_required
+def send_friend_request(request, pk):
+    from_user = request.user
+    try:
+        to_user = User.objects.get(id=pk)
+    except User.DoesNotExist:
+        return Response({'msg': 'User not found'}, status=404)
+    friend_request, created = FriendRequest.objects.get_or_create(from_user=from_user, to_user=to_user)
+    if created:
+        return Response({'msg': 'Friend request sent!'}, status=201)
+    else:
+        return Response({'msg': 'Friend request was already sent!'}, status=200)

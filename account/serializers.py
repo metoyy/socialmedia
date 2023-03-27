@@ -8,10 +8,23 @@ from django.utils.translation import gettext_lazy as _
 User = get_user_model()
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserModifySerializer(serializers.ModelSerializer):
+    email = serializers.ReadOnlyField(read_only=True)
+
     class Meta:
         model = User
-        exclude = ('password',)
+        fields = ('username', 'first_name', 'last_name', 'email', 'profile_picture', 'profile_quote',)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    email = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = User
+        exclude = ('password', 'activation_code', 'password_reset_code', 'user_permissions')
+
+    def validate(self, attrs):
+        return super().validate(attrs)
 
 
 class RegisterSerializer(serializers.ModelSerializer):

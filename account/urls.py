@@ -4,7 +4,9 @@ from . import views
 
 
 urlpatterns = [
-    path('', views.UserListApiView.as_view()),              # GET list of accounts
+    path('', views.UserListApiView.as_view()),              # GET list of accounts (requires Authentication)
+    path('<int:pk>/', views.DetailUser.as_view()),          # GET returns detailed view of account
+                                                            # (requires authentication)
     path('register/', views.RegistrationView.as_view()),    # POST registration, takes (email, first_name,
                                                             # last_name, username, password, password2)
     path('activate/', views.ActivationView.as_view()),      # POST takes (code)

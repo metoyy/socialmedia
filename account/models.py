@@ -52,6 +52,7 @@ class CustomUser(AbstractUser):
         ),
     )
     password_reset_code = models.CharField(max_length=255, blank=True, null=True)
+    friends = models.ManyToManyField('CustomUser', blank=True)
     objects = UserManager()
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -63,3 +64,8 @@ class CustomUser(AbstractUser):
         import uuid
         code = str(uuid.uuid4())
         self.activation_code = code
+
+
+class FriendRequest(models.Model):
+    from_user = models.ForeignKey(CustomUser, related_name='from_user', on_delete=models.CASCADE)
+    to_user = models.ForeignKey(CustomUser, related_name='to_user', on_delete=models.CASCADE)

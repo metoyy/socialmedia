@@ -68,6 +68,7 @@ class CustomUser(AbstractUser):
     )
     password_reset_code = models.CharField(max_length=255, blank=True, null=True)
     friends = models.ManyToManyField('CustomUser', blank=True, related_name='related_friends')
+    private_account = models.BooleanField(default=False)
     objects = UserManager()
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

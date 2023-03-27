@@ -1,5 +1,6 @@
 import uuid
 
+import django.db.utils
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from rest_framework import permissions
@@ -9,6 +10,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.generics import DestroyAPIView
 
 from account import serializers
 from account.models import CustomUser, FriendRequest
@@ -23,9 +25,12 @@ class RegistrationView(APIView):
 
     @staticmethod
     def post(request):
-        serializer = serializers.RegisterSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        try:
+            serializer = serializers.RegisterSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user = serializer.save()
+        except django.db.utils.IntegrityError:
+            return Response({'msg': 'Something went wrong, check input please'}, status=400)
         if user:
             try:
                 send_confirmation_mail(user.email, user.activation_code)
@@ -88,7 +93,7 @@ class PasswordResetView(APIView):
 
 class DetailUser(APIView):
 
-    permission_classes = permissions.IsAuthenticated,
+    permission_classes = permissions.IsAuthenticated, IfPrivateAccount
 
     def get(self, request, pk):
         user = User.objects.get(id=pk)
@@ -128,6 +133,8 @@ class SendFriendRequestView(APIView):
             to_user = User.objects.get(id=pk)
         except User.DoesNotExist:
             return Response({'msg': 'User not found'}, status=404)
+        if from_user in to_user.related_friends.all():
+            return Response({'msg': 'You are already friends!'}, status=400)
         friend_request, created = FriendRequest.objects.get_or_create(from_user=from_user, to_user=to_user)
         if created:
             return Response({'msg': 'Friend request sent!'}, status=201)
@@ -136,6 +143,7 @@ class SendFriendRequestView(APIView):
 
 
 class HandleFriendRequestView(APIView):
+    permission_classes = (IsReceiverOfRequest,)
 
     def post(self, request, pk):
         try:
@@ -150,12 +158,41 @@ class HandleFriendRequestView(APIView):
         else:
             return Response({'msg': 'Friend request not accepted! You cannot accept own request!'}, status=200)
 
+    def delete(self, request, pk):
+        friend_req = FriendRequest.objects.get(id=pk)
+        friend_req.delete()
+        return Response({'msg': 'Successfully deleted!'}, status=204)
+
 
 class FriendListView(APIView):
     permission_classes = permissions.IsAuthenticated,
 
-    def get(self, request, pk=None):
-        user = User.objects.get(id=request.user.id if not pk else pk)
+    def get(self, request):
+        user = User.objects.get(id=request.user.id)
         serializer = serializers.FriendListSerializer(instance=user)
         return Response(serializer.data, status=200)
 
+
+class FriendDeleteView(APIView):
+    permission_classes = permissions.IsAuthenticated,
+
+    def delete(self, request, pk):
+        try:
+            many_to_many_field = User.objects.get(id=request.user.id).related_friends
+            friend = User.objects.get(id=request.user.id).related_friends.get(id=pk)
+            many_to_many_field.remove(friend)
+        except User.DoesNotExist:
+            return Response({'msg': 'Friend not found!'}, status=404)
+        return Response({'msg': 'Friend deleted!'}, status=200)
+
+
+class FriendRequestsListView(APIView):
+    permission_classes = permissions.IsAuthenticated,
+
+    def get(self, request):
+        user_in = FriendRequest.objects.filter(to_user_id=request.user.id)
+        user_out = FriendRequest.objects.filter(from_user_id=request.user.id)
+        seri1 = serializers.FriendReqInSerializer(instance=user_in, many=True).data
+        seri2 = serializers.FriendReqOutSerializer(instance=user_out, many=True).data
+        print(seri1)
+        return Response({'incoming': seri1, 'outgoing': seri2})

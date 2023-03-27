@@ -132,3 +132,29 @@ def send_friend_request(request, pk):
         return Response({'msg': 'Friend request sent!'}, status=201)
     else:
         return Response({'msg': 'Friend request was already sent!'}, status=200)
+
+
+@login_required
+def handle_friend_request(request, pk):
+    try:
+        friend_request = FriendRequest.objects.get(id=pk)
+    except FriendRequest.DoesNotExist:
+        return Response({'msg': 'Friend request not found!'}, status=404)
+    if friend_request.to_user == request.user:
+        friend_request.to_user.friends.add(friend_request.from_user)
+        friend_request.from_user.friends.add(friend_request.to_user)
+        friend_request.delete()
+        return Response({'msg': 'Friend request accepted!'}, status=200)
+    else:
+        return Response({'msg': 'Friend request not accepted!'}, status=200)
+
+
+class FriendListView(APIView):
+    permission_classes = permissions.IsAuthenticated,
+
+    def get(self, request, pk=None):
+        user = User.objects.get(id=request.user.id if not pk else pk)
+        serializer = serializers.FriendListSerializer(instance=user)
+        return Response(serializer.data, status=200)
+
+

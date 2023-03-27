@@ -8,6 +8,12 @@ from django.utils.translation import gettext_lazy as _
 User = get_user_model()
 
 
+class FriendListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('friends',)
+
+
 class UserModifySerializer(serializers.ModelSerializer):
     email = serializers.ReadOnlyField(read_only=True)
 

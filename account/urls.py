@@ -15,6 +15,14 @@ urlpatterns = [
     path('reset/', views.PasswordResetView.as_view()),      # POST takes (email), if exists, sends email with code
                                                             # PUT takes (password_reset_code=code, password, password2)
                                                             # and changes user password with new given
+    path('friends/', views.FriendListView.as_view()),
+    path('friends/<int:pk>/', views.FriendListView.as_view()),
 
+    path('friends/send_friend_request/<int:pk>/',
+         views.send_friend_request,
+         name='send friend request'),
+    path('friends/accept_friend_request/<int:pk>/',
+         views.handle_friend_request,
+         name='accept friend request'),
 ]
 

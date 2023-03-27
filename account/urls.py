@@ -18,11 +18,11 @@ urlpatterns = [
     path('friends/', views.FriendListView.as_view()),
     path('friends/<int:pk>/', views.FriendListView.as_view()),
 
-    path('friends/send_friend_request/<int:pk>/',
-         views.send_friend_request,
+    path('send_friend_request/<int:pk>/',
+         views.SendFriendRequestView.as_view(),
          name='send friend request'),
-    path('friends/accept_friend_request/<int:pk>/',
-         views.handle_friend_request,
+    path('accept_friend_request/<int:pk>/',
+         views.HandleFriendRequestView.as_view(),
          name='accept friend request'),
 ]
 

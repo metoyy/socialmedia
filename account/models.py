@@ -1,3 +1,4 @@
+import django.db.utils
 from django.db import models
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
@@ -17,6 +18,11 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
+    @staticmethod
+    def _create_username():
+        from random_username.generate import generate_username as gu
+        return gu(1)[0]
+
     def create_user(self, email, password, **kwargs):
         kwargs.setdefault('is_staff', False)
         kwargs.setdefault('is_superuser', False)
@@ -26,11 +32,20 @@ class UserManager(BaseUserManager):
         kwargs.setdefault('is_staff', True)
         kwargs.setdefault('is_superuser', True)
         kwargs.setdefault('is_active', True)
+        kwargs.setdefault('activation_code', '')
+        try:
+            kwargs['username']
+        except KeyError:
+            kwargs['username'] = self._create_username()
         if kwargs.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True!')
         if kwargs.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True!')
-        return self._create_user(email, password, **kwargs)
+        try:
+            return self._create_user(email, password, **kwargs)
+        except django.db.utils.IntegrityError:
+            kwargs['username'] = self._create_username()
+            return self.create_superuser(email, password, **kwargs)
 
 
 class CustomUser(AbstractUser):
@@ -52,7 +67,7 @@ class CustomUser(AbstractUser):
         ),
     )
     password_reset_code = models.CharField(max_length=255, blank=True, null=True)
-    friends = models.ManyToManyField('CustomUser', blank=True)
+    friends = models.ManyToManyField('CustomUser', blank=True, related_name='related_friends')
     objects = UserManager()
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -65,7 +80,13 @@ class CustomUser(AbstractUser):
         code = str(uuid.uuid4())
         self.activation_code = code
 
+    class Meta:
+        ordering = ['id']
+
 
 class FriendRequest(models.Model):
     from_user = models.ForeignKey(CustomUser, related_name='from_user', on_delete=models.CASCADE)
     to_user = models.ForeignKey(CustomUser, related_name='to_user', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{CustomUser.from_user.email}'

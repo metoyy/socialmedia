@@ -11,7 +11,7 @@ User = get_user_model()
 class FriendListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('friends',)
+        exclude = ('password', 'activation_code', 'password_reset_code', 'user_permissions', 'friends')
 
 
 class UserModifySerializer(serializers.ModelSerializer):
@@ -27,10 +27,16 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        exclude = ('password', 'activation_code', 'password_reset_code', 'user_permissions')
+        exclude = ('password', 'activation_code', 'password_reset_code', 'user_permissions', 'friends')
+        ordering = ['id']
 
     def validate(self, attrs):
         return super().validate(attrs)
+
+    def to_representation(self, instance):
+        represent = super().to_representation(instance)
+        represent['friends'] = FriendListSerializer(instance.related_friends.all(), many=True).data
+        return represent
 
 
 class RegisterSerializer(serializers.ModelSerializer):

@@ -120,33 +120,35 @@ class DetailUser(APIView):
             return Response({'msg': 'User not found'}, status=404)
 
 
-@login_required
-def send_friend_request(request, pk):
-    from_user = request.user
-    try:
-        to_user = User.objects.get(id=pk)
-    except User.DoesNotExist:
-        return Response({'msg': 'User not found'}, status=404)
-    friend_request, created = FriendRequest.objects.get_or_create(from_user=from_user, to_user=to_user)
-    if created:
-        return Response({'msg': 'Friend request sent!'}, status=201)
-    else:
-        return Response({'msg': 'Friend request was already sent!'}, status=200)
+class SendFriendRequestView(APIView):
+
+    def post(self, request, pk):
+        from_user = request.user
+        try:
+            to_user = User.objects.get(id=pk)
+        except User.DoesNotExist:
+            return Response({'msg': 'User not found'}, status=404)
+        friend_request, created = FriendRequest.objects.get_or_create(from_user=from_user, to_user=to_user)
+        if created:
+            return Response({'msg': 'Friend request sent!'}, status=201)
+        else:
+            return Response({'msg': 'Friend request was already sent!'}, status=200)
 
 
-@login_required
-def handle_friend_request(request, pk):
-    try:
-        friend_request = FriendRequest.objects.get(id=pk)
-    except FriendRequest.DoesNotExist:
-        return Response({'msg': 'Friend request not found!'}, status=404)
-    if friend_request.to_user == request.user:
-        friend_request.to_user.friends.add(friend_request.from_user)
-        friend_request.from_user.friends.add(friend_request.to_user)
-        friend_request.delete()
-        return Response({'msg': 'Friend request accepted!'}, status=200)
-    else:
-        return Response({'msg': 'Friend request not accepted!'}, status=200)
+class HandleFriendRequestView(APIView):
+
+    def post(self, request, pk):
+        try:
+            friend_request = FriendRequest.objects.get(id=pk)
+        except FriendRequest.DoesNotExist:
+            return Response({'msg': 'Friend request not found!'}, status=404)
+        if friend_request.to_user == request.user:
+            friend_request.to_user.friends.add(friend_request.from_user)
+            friend_request.from_user.friends.add(friend_request.to_user)
+            friend_request.delete()
+            return Response({'msg': 'Friend request accepted!'}, status=200)
+        else:
+            return Response({'msg': 'Friend request not accepted! You cannot accept own request!'}, status=200)
 
 
 class FriendListView(APIView):
@@ -156,5 +158,4 @@ class FriendListView(APIView):
         user = User.objects.get(id=request.user.id if not pk else pk)
         serializer = serializers.FriendListSerializer(instance=user)
         return Response(serializer.data, status=200)
-
 

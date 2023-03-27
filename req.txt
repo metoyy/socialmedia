@@ -13,3 +13,5 @@ dj-rest-auth
 python-decouple
 djangorestframework-simplejwt
 pyjwt
+
+random-username

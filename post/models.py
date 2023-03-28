@@ -26,8 +26,10 @@ class PostImages(models.Model):
 
     def generate_name(self):
         from random import randint
-        return 'image' + str(self.id) + str(randint(100000, 999999))
+        return 'image' + str(self.id) + '_' + str(randint(100000, 999999))
 
     def save(self, *args, **kwargs):
         self.title = self.generate_name()
         return super(PostImages, self).save(*args, **kwargs)
+
+# category

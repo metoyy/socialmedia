@@ -5,6 +5,7 @@ from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 
 from account.models import FriendRequest
+from post.serializers import PostSerializer
 
 User = get_user_model()
 
@@ -61,6 +62,7 @@ class UserSerializer(serializers.ModelSerializer):
         if not instance.private_account:
             represent = super().to_representation(instance)
             represent['friends'] = FriendSerializer(instance.related_friends.all(), many=True).data
+            represent['posts'] = PostSerializer(instance=instance.posts.all(), many=True).data
             return represent
         else:
             represent = super().to_representation(instance)
@@ -209,3 +211,12 @@ class FriendReqOutSerializer(serializers.ModelSerializer):
         represent['email'] = user.email
         represent['username'] = user.username
         return represent
+
+
+class FriendHandleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FriendRequest
+        fields = ('active',)
+
+
+

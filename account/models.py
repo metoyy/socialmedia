@@ -88,6 +88,7 @@ class CustomUser(AbstractUser):
 class FriendRequest(models.Model):
     from_user = models.ForeignKey(CustomUser, related_name='from_user', on_delete=models.CASCADE)
     to_user = models.ForeignKey(CustomUser, related_name='to_user', on_delete=models.CASCADE)
+    active = models.BooleanField(default=True)
 
     def __str__(self):
         return f'{CustomUser.from_user.email}'

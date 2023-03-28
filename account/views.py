@@ -179,8 +179,11 @@ class FriendDeleteView(APIView):
     def delete(self, request, pk):
         try:
             many_to_many_field = User.objects.get(id=request.user.id).related_friends
+            many_to_many_field_2 = User.objects.get(id=pk).related_friends
             friend = User.objects.get(id=request.user.id).related_friends.get(id=pk)
+            friend_2 = User.objects.get(id=pk).related_friends.get(id=request.user.id)
             many_to_many_field.remove(friend)
+            many_to_many_field_2.remove(friend_2)
         except User.DoesNotExist:
             return Response({'msg': 'Friend not found!'}, status=404)
         return Response({'msg': 'Friend deleted!'}, status=200)

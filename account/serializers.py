@@ -22,7 +22,7 @@ class FriendListSerializer(serializers.ModelSerializer):
 class FriendSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        exclude = ('password', 'activation_code', 'password_reset_code', 'user_permissions', 'friends')
+        exclude = ('password', 'activation_code', 'password_reset_code', 'user_permissions', 'friends',)
 
     def to_representation(self, instance):
         if not instance.private_account:
@@ -59,10 +59,45 @@ class UserSerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
     def to_representation(self, instance):
+        represent = super().to_representation(instance)
+        represent['friends'] = FriendSerializer(instance.related_friends.all(), many=True).data
+        represent['posts'] = PostSerializer(instance=instance.posts.all(), many=True).data
+        return represent
+
+
+class UserPrivateSerializer(serializers.ModelSerializer):
+    email = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = User
+        exclude = ('password', 'activation_code', 'password_reset_code', 'user_permissions',
+                   'friends', 'is_staff', 'is_active')
+
+    def to_representation(self, instance):
+        represent = super().to_representation(instance)
+        represent.pop('last_login')
+        represent.pop('date_joined')
+        represent.pop('first_name')
+        represent.pop('last_name')
+        represent.pop('profile_quote')
+        represent.pop('groups')
+        return represent
+
+
+class UserListSerializer(serializers.ModelSerializer):
+    email = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = User
+        exclude = ('password', 'activation_code', 'password_reset_code', 'user_permissions',
+                   'friends', 'is_staff', 'is_active')
+
+    def validate(self, attrs):
+        return super().validate(attrs)
+
+    def to_representation(self, instance):
         if not instance.private_account:
             represent = super().to_representation(instance)
-            represent['friends'] = FriendSerializer(instance.related_friends.all(), many=True).data
-            represent['posts'] = PostSerializer(instance=instance.posts.all(), many=True).data
             return represent
         else:
             represent = super().to_representation(instance)

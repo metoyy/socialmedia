@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.generics import DestroyAPIView
+from rest_framework.pagination import LimitOffsetPagination
 
 from account import serializers
 from account.models import CustomUser, FriendRequest
@@ -57,8 +58,9 @@ class LoginView(TokenObtainPairView):
 
 class UserListApiView(ListAPIView):
     queryset = User.objects.all()
-    serializer_class = serializers.UserSerializer
+    serializer_class = serializers.UserListSerializer
     permission_classes = permissions.IsAuthenticated,
+    pagination_class = LimitOffsetPagination
 
 
 class PasswordResetView(APIView):
@@ -93,11 +95,17 @@ class PasswordResetView(APIView):
 
 class DetailUser(APIView):
 
-    permission_classes = permissions.IsAuthenticated, IfPrivateAccount
+    permission_classes = permissions.IsAuthenticated,  # IfPrivateAccount
 
     def get(self, request, pk):
         user = User.objects.get(id=pk)
-        serializer = serializers.UserSerializer(instance=user)
+        if user.private_account:
+            if user in request.user.friends.all() or user == request.user:
+                serializer = serializers.UserSerializer(instance=user)
+            else:
+                serializer = serializers.UserPrivateSerializer(instance=user)
+        else:
+            serializer = serializers.UserSerializer(instance=user)
         return Response(serializer.data, status=200)
 
     def put(self, request, pk):
@@ -199,3 +207,4 @@ class FriendRequestsListView(APIView):
         seri2 = serializers.FriendReqOutSerializer(instance=user_out, many=True).data
         print(seri1)
         return Response({'incoming': seri1, 'outgoing': seri2})
+

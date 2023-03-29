@@ -15,3 +15,5 @@ djangorestframework-simplejwt
 pyjwt
 
 random-username
+
+django-rest-swagger

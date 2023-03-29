@@ -1,5 +1,7 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
+
+from favorite.views import FavoriteListView
 from . import views
 
 
@@ -27,6 +29,7 @@ urlpatterns = [
     path('friend_requests/<int:pk>/',
          views.HandleFriendRequestView.as_view(),
          name='accept friend request'),
+    path('favorites/', FavoriteListView.as_view()),
 
 ]
 

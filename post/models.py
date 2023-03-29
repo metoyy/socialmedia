@@ -11,6 +11,7 @@ class Post(models.Model):
     preview = models.ImageField(upload_to='images/', null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    favorite = models.ManyToManyField(User, related_name='favorite_posts', blank=True)
 
     def __str__(self):
         return f'{self.owner} - {self.title[:50]}'

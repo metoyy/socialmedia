@@ -17,3 +17,6 @@ pyjwt
 random-username
 
 django-rest-swagger
+
+redis
+celery==5.2.7

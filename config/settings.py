@@ -32,6 +32,13 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS').split(' ')
 
 AUTH_USER_MODEL = 'account.CustomUser'
 
+# Celery
+
+CELERY_BROKER_URL = "redis://127.0.0.1:16379/0"
+CELERY_TIMEZONE = 'Asia/Almaty'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -69,6 +76,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'config.middleware.RequestTimeMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

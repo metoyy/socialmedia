@@ -72,6 +72,8 @@ INSTALLED_APPS = [
     'search',
     'news',
     'post',
+    'chat',
+    'parsing',
 
 ]
 

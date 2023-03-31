@@ -1,7 +1,9 @@
+from celery import shared_task
 from django.core.mail import send_mail
 from decouple import config
 
 
+@shared_task
 def send_confirmation_mail(user, code):
     send_mail(
         subject='Письмо активации Unify',
@@ -15,6 +17,7 @@ def send_confirmation_mail(user, code):
     )
 
 
+@shared_task
 def send_password_reset(user, code):
     send_mail(
         subject='Письмо сброса пароля Unify',

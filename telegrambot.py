@@ -48,7 +48,6 @@ def parse_overall():
     text = soup.find('p').text
     ordered_dict = json.loads(text)
     return ordered_dict
-    
 
 
 @bot.message_handler(commands=['start'])
@@ -99,7 +98,6 @@ How much messages sent: {result["messages_count"]}\n\nRequest handled at\n{resul
     bot.send_message(message.chat.id, msg)
     answer = bot.send_message(message.chat.id, 'Choose what you want?', reply_markup=keyboard_start)
     bot.register_next_step_handler(message, handle_answer)
-
 
 
 bot.polling()

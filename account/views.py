@@ -2,20 +2,17 @@ import uuid
 
 import django.db.utils
 from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import login_required
-from rest_framework import permissions
-from rest_framework.decorators import api_view
+
 from rest_framework.generics import *
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework.generics import DestroyAPIView
 from rest_framework.pagination import LimitOffsetPagination
 
 from account import serializers
 from account.models import CustomUser, FriendRequest
-from account.sendmail import *
+from account.tasks import *
 from account.permissions import *
 
 User = get_user_model()
@@ -34,7 +31,7 @@ class RegistrationView(APIView):
             return Response({'msg': 'Something went wrong, check input please'}, status=400)
         if user:
             try:
-                send_confirmation_mail(user.email, user.activation_code)
+                send_confirmation_mail.delay(user.email, user.activation_code)
             except:
                 return Response({'msg': 'Registered but could not send email.',
                                  'data': serializer.data}, status=201)
@@ -78,7 +75,7 @@ class PasswordResetView(APIView):
             user.save()
         except:
             return Response({'msg': 'Invalid email or not found!'}, status=400)
-        send_password_reset(user.email, user.password_reset_code)
+        send_password_reset.delay(user.email, user.password_reset_code)
         return Response({'msg': 'Confirmation code sent!'}, status=200)
 
     @staticmethod

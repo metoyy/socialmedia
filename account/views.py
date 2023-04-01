@@ -68,12 +68,12 @@ class PasswordResetView(APIView):
         try:
             email = request.data['email']
             assert '@' in email
-            user = CustomUser.objects.get(email=email)
-            if user.password_reset_code != '':
+            user = User.objects.get(email=email)
+            if user.password_reset_code is not None and user.password_reset_code != '':
                 return Response({'msg': 'Code already sent, please check your inbox!'}, status=200)
             user.password_reset_code = uuid.uuid4()
             user.save()
-        except:
+        except User.DoesNotExist:
             return Response({'msg': 'Invalid email or not found!'}, status=400)
         send_password_reset.delay(user.email, user.password_reset_code)
         return Response({'msg': 'Confirmation code sent!'}, status=200)
@@ -84,7 +84,6 @@ class PasswordResetView(APIView):
             serializer = serializers.PasswordResetSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
-
         except User.DoesNotExist:
             return Response({'msg': 'Code expired or invalid!'}, status=400)
         return Response({'msg': 'Successfully changed password!'}, status=200)

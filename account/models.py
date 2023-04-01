@@ -67,8 +67,10 @@ class CustomUser(AbstractUser):
         ),
     )
     password_reset_code = models.CharField(max_length=255, blank=True, null=True)
-    friends = models.ManyToManyField('CustomUser', blank=True, related_name='related_friends')
+    friends = models.ManyToManyField('account.CustomUser', blank=True, related_name='related_friends')
     private_account = models.BooleanField(default=False)
+    recommendations = models.ForeignKey('recomendation.Recommendation', related_name='owner',
+                                        on_delete=models.SET_NULL, null=True, blank=True)
     objects = UserManager()
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -92,3 +94,6 @@ class FriendRequest(models.Model):
 
     def __str__(self):
         return f'{CustomUser.from_user.email}'
+
+    class Meta:
+        unique_together = ['from_user', 'to_user']

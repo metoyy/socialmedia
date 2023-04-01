@@ -33,4 +33,3 @@ class PostImages(models.Model):
         self.title = self.generate_name()
         return super(PostImages, self).save(*args, **kwargs)
 
-# category

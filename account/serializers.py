@@ -5,6 +5,7 @@ from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 
 from account.models import FriendRequest
+from .tasks import *
 from post.serializers import PostSerializer
 
 User = get_user_model()
@@ -90,7 +91,7 @@ class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         exclude = ('password', 'activation_code', 'password_reset_code', 'user_permissions',
-                   'friends', 'is_staff', 'is_active')
+                   'friends', 'is_staff', 'is_active', 'recommendations',)
 
     def validate(self, attrs):
         return super().validate(attrs)
@@ -174,6 +175,7 @@ class ActivationSerializer(serializers.Serializer):
             user.is_active = True
             user.activation_code = ''
             user.save()
+            send_welcome.delay(user.email)
         except User.DoesNotExist:
             self.fail('bad_code')
 
@@ -196,13 +198,14 @@ class PasswordResetSerializer(serializers.Serializer):
             raise serializers.ValidationError('Password cant be previous!')
         user = User.objects.get(password_reset_code=attrs['password_reset_code'])
         user.set_password(password)
+        send_changed_pw_notification.delay(user.email,)
         user.save()
         return attrs
 
     def save(self, **kwargs):
         try:
             user = User.objects.get(password_reset_code=self.password_reset_code)
-            user.password_reset_code = ''
+            user.password_reset_code = None
             user.save()
         except User.DoesNotExist:
             self.fail('bad_code')

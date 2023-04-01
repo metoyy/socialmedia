@@ -54,12 +54,33 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         exclude = ('password', 'activation_code', 'password_reset_code', 'user_permissions',
-                   'friends', 'is_staff', 'is_active')
+                   'friends', 'is_staff', 'is_active', 'balance', 'recommendations')
 
     def validate(self, attrs):
         return super().validate(attrs)
 
     def to_representation(self, instance):
+        print(instance)
+        print(self.context)
+        represent = super().to_representation(instance)
+        represent['friends'] = FriendSerializer(instance.related_friends.all(), many=True).data
+        represent['posts'] = PostSerializer(instance=instance.posts.all(), many=True).data
+        return represent
+
+
+class UserSelfSerializer(serializers.ModelSerializer):
+    email = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = User
+        exclude = ('password', 'activation_code', 'password_reset_code', 'user_permissions',)
+
+    def validate(self, attrs):
+        return super().validate(attrs)
+
+    def to_representation(self, instance):
+        print(instance)
+        print(self.context)
         represent = super().to_representation(instance)
         represent['friends'] = FriendSerializer(instance.related_friends.all(), many=True).data
         represent['posts'] = PostSerializer(instance=instance.posts.all(), many=True).data
@@ -72,7 +93,7 @@ class UserPrivateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         exclude = ('password', 'activation_code', 'password_reset_code', 'user_permissions',
-                   'friends', 'is_staff', 'is_active')
+                   'friends', 'is_staff', 'is_active', 'balance')
 
     def to_representation(self, instance):
         represent = super().to_representation(instance)
@@ -91,7 +112,7 @@ class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         exclude = ('password', 'activation_code', 'password_reset_code', 'user_permissions',
-                   'friends', 'is_staff', 'is_active', 'recommendations',)
+                   'friends', 'is_staff', 'is_active', 'recommendations', 'balance',)
 
     def validate(self, attrs):
         return super().validate(attrs)
@@ -257,4 +278,34 @@ class FriendHandleSerializer(serializers.ModelSerializer):
         fields = ('active',)
 
 
+class TopUpBalanceSerializer(serializers.ModelSerializer):
+    balance = serializers.DecimalField(required=True, decimal_places=2, max_digits=100)
 
+    class Meta:
+        model = User
+        fields = ('balance',)
+
+    def validate(self, attrs):
+        if attrs['balance'] > 0:
+            self.top_up = attrs['balance']
+        else:
+            raise serializers.ValidationError('Balance must be positive!')
+        return attrs
+
+    def save(self, **kwargs):
+        user = kwargs['user']
+        user = User.objects.get(id=user.id)
+        user.balance += self.top_up
+        user.save()
+
+
+class BalanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('balance',)
+
+    def to_representation(self, instance):
+        represent = super().to_representation(instance)
+        repre = dict()
+        repre['balance'] = represent['balance']
+        return repre

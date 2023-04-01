@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'post',
     'chat',
     'parsing',
+    'order',
 
 ]
 

@@ -91,17 +91,20 @@ class PasswordResetView(APIView):
 
 class DetailUser(APIView):
 
-    permission_classes = permissions.IsAuthenticated,  # IfPrivateAccount
+    permission_classes = permissions.IsAuthenticated,
 
     def get(self, request, pk):
         user = User.objects.get(id=pk)
-        if user.private_account:
-            if user in request.user.friends.all() or user == request.user:
-                serializer = serializers.UserSerializer(instance=user)
-            else:
-                serializer = serializers.UserPrivateSerializer(instance=user)
+        if request.user == user:
+            serializer = serializers.UserSelfSerializer(instance=user)
         else:
-            serializer = serializers.UserSerializer(instance=user)
+            if user.private_account:
+                if user in request.user.friends.all() or user == request.user:
+                    serializer = serializers.UserSerializer(instance=user)
+                else:
+                    serializer = serializers.UserPrivateSerializer(instance=user)
+            else:
+                serializer = serializers.UserSerializer(instance=user)
         return Response(serializer.data, status=200)
 
     def put(self, request, pk):
@@ -204,3 +207,20 @@ class FriendRequestsListView(APIView):
         print(seri1)
         return Response({'incoming': seri1, 'outgoing': seri2})
 
+
+class BalanceView(APIView):
+    permission_classes = permissions.IsAuthenticated,
+
+    def get(self, request):
+        user = User.objects.get(id=request.user.id)
+        serializer = serializers.BalanceSerializer(instance=user)
+        return Response(serializer.data, status=200)
+
+
+class TopUpBalanceView(APIView):
+    def post(self, request):
+        user = User.objects.get(id=request.user.id)
+        serializer = serializers.TopUpBalanceSerializer(instance=user, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=user)
+        return Response(serializer.data, status=200)

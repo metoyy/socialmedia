@@ -28,11 +28,3 @@ class IsReceiverOfRequest(permissions.BasePermission):
         if request.user.id == view.request.user.id:
             return True
         return False
-
-
-# class IsAuthorOrAdmin(permissions.BasePermission):
-#     def has_object_permission(self, request, view, obj):
-#         print(f'{obj}')
-#         if request.user.is_superuser:
-#             return True
-#         return True

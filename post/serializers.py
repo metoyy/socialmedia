@@ -24,6 +24,19 @@ class PostSerializer(serializers.ModelSerializer):
         return represent
 
 
+class PostRecommendSerializer(serializers.ModelSerializer):
+    owner_username = serializers.ReadOnlyField(source='owner.username')
+
+    class Meta:
+        model = Post
+        fields = ('id', 'title', 'owner', 'preview', 'owner_username', 'comments')
+
+    def to_representation(self, instance):
+        represent = super().to_representation(instance)
+        represent['comments'] = instance.comments.all().count()
+        return represent
+
+
 class PostCommentsSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -122,9 +135,15 @@ class PostSearchListSerializer(serializers.ModelSerializer):
         return user.favorite_posts.filter(id=post.id).exists()
 
     def to_representation(self, instance):
-        represent = super().to_representation(instance)
-        represent['likes_count'] = instance.likes.count()
+        represent = dict()
+        # represent = super().to_representation(instance)
         user = self.context
+        represent['post_id'] = instance.id
+        represent['post_title'] = instance.title
+        represent['post_owner'] = instance.owner.id
+        represent['post_owner_username'] = instance.owner.username
+        represent['preview'] = instance.preview.url
+        represent['likes_count'] = instance.likes.count()
         if user.is_authenticated:
             represent['is_liked'] = self.is_liked(instance, user)
             represent['is_favorite'] = self.is_favorite(instance, user)

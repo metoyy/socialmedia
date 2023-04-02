@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from account.serializers import UserListSerializer
 from post.models import Post
-from post.serializers import PostSerializer
+from post.serializers import PostRecommendSerializer
 from recomendation.models import Recommendation
 
 User = get_user_model()
@@ -27,5 +27,5 @@ class RecommendationSerializer(serializers.ModelSerializer):
         members = recommend.members
         posts = recommend.posts.order_by('created_at',).reverse()
         represent['friend_recommendations'] = UserListSerializer(instance=members, many=True).data
-        represent['all_posts'] = PostSerializer(instance=posts, many=True).data
+        represent['all_posts'] = PostRecommendSerializer(instance=posts, many=True).data
         return represent

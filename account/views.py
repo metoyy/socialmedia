@@ -11,7 +11,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.pagination import LimitOffsetPagination
 
 from account import serializers
-from account.models import CustomUser, FriendRequest
+from account.models import FriendRequest
 from account.tasks import *
 from account.permissions import *
 

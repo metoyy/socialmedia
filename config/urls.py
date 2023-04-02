@@ -51,14 +51,3 @@ urlpatterns = [
 
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-
-
-
-
-############
-# todo
-# bugs
-# если отправляют два запроса на дружбу друг другу, они останутся пока кто нибудь из них не примет
-# попробуй реализовать все в одной вьюшке
-

@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Count
 from django.shortcuts import render, redirect
 from rest_framework import permissions
 from rest_framework.views import APIView
@@ -8,7 +7,6 @@ from rest_framework.response import Response
 from chat.models import Chat
 from .serializers import *
 
-# Create your views here.
 
 User = get_user_model()
 
@@ -40,9 +38,13 @@ class MessagesView(APIView):
         return Response(serializer, status=200)
 
     def post(self, request, chat_id):
+        try:
+            chat = Chat.objects.get(id=chat_id)
+        except Chat.DoesNotExist:
+            return Response({'msg': 'Chat not found!'}, status=404)
         serializer = MessageCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(chat=Chat.objects.get(id=chat_id), author=request.user)
+        serializer.save(chat=chat, author=request.user)
         return redirect(f'/api/chats/dialogs/{chat_id}/')
 
 
@@ -50,8 +52,12 @@ class CreateDialogView(APIView):
     permission_classes = permissions.IsAuthenticated,
 
     def get(self, request, user_id):
-        chats = Chat.objects.filter(members__in=[request.user.id, user_id],
-                                    type=Chat.DIALOG).annotate(c=Count('members')).filter(c=2)
+        try:
+            new = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({'msg': 'User not found!'}, status=404)
+        chats = Chat.objects.filter(members__in=[request.user]).filter(members__in=[new])
+        print(chats, 'sdsdsd')
         if chats.count() == 0:
             chat = Chat.objects.create()
             new_user = User.objects.get(id=user_id)

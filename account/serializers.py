@@ -163,6 +163,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         password = attrs['password']
         password2 = attrs.pop('password2')
+        username = attrs['username']
         if password != password2:
             raise serializers.ValidationError('Passwords didn\'t match!')
         if password.isdigit() or password.isalpha():
@@ -173,7 +174,11 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Password field must be more than 8 symbols!'
             )
-        return attrs
+        try:
+            users = User.objects.get(username=username)
+            raise serializers.ValidationError('User with that username already exists!')
+        except User.DoesNotExist:
+            return attrs
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)

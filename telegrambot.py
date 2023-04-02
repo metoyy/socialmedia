@@ -2,12 +2,11 @@ import telebot
 from telebot import types
 from bs4 import BeautifulSoup as bs
 import requests
-from multiprocessing import Pool
-import ast
 import json
+from decouple import config
 
 
-token = '6167877522:AAGjpyMAaWjOXyzCDdDClf_hYfCZLE4KVtk'
+token = config('TELEGRAM_TOKEN')
 bot = telebot.TeleBot(token)
 
 keyboard_start = types.ReplyKeyboardMarkup()

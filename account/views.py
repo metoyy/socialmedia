@@ -61,6 +61,8 @@ class RestoreAccountView(APIView):
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             return Response({'msg': 'User with that email not found!'}, status=404)
+        if user.is_active:
+            return Response({'msg': 'User is already active!'}, status=400)
         code = str(uuid.uuid4())
         user.activation_code = code
         user.save()

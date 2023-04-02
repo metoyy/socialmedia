@@ -48,7 +48,7 @@ def send_changed_pw_notification(user):
 def send_welcome(user):
     send_mail(
         subject='Добро пожаловать! Unify',
-        message=f'Поздравляем вас с успешной регистрацией!\n\n'
+        message=f'Поздравляем вас с успешной активацией!\n\n'
                 'Приятного пользования нашим сервисом!\n\n'
                 'Unify test project',
         from_email=config('EMAIL_USER'),

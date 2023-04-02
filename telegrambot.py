@@ -76,6 +76,8 @@ def handle_answer(message):
 
 def users_list(message):
     result = parse_users()
+    if not result:
+        bot.send_message(message.chat.id, 'No users available')
     for item in result:
         bot.send_message(message.chat.id, item)
     answer = bot.send_message(message.chat.id, 'Choose what you want?', reply_markup=keyboard_start)
@@ -84,6 +86,8 @@ def users_list(message):
 
 def posts_list(message):
     result = parse_posts()
+    if not result:
+        bot.send_message(message.chat.id, 'No posts at the time')
     for item in result:
         bot.send_message(message.chat.id, item)
     answer = bot.send_message(message.chat.id, 'Choose what you want?', reply_markup=keyboard_start)

@@ -43,7 +43,7 @@ class UserModifySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'first_name', 'last_name', 'email', 'profile_picture', 'profile_quote',)
+        fields = ('username', 'first_name', 'last_name', 'email', 'profile_picture', 'profile_quote', 'is_active')
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -197,7 +197,7 @@ class ActivationSerializer(serializers.Serializer):
         try:
             user = User.objects.get(activation_code=self.code)
             user.is_active = True
-            user.activation_code = ''
+            user.activation_code = None
             user.save()
             send_welcome.delay(user.email)
         except User.DoesNotExist:
@@ -312,3 +312,24 @@ class BalanceSerializer(serializers.ModelSerializer):
         repre = dict()
         repre['balance'] = represent['balance']
         return repre
+
+
+class RestoreAccountSerializer(serializers.Serializer):
+    email = serializers.CharField(required=True, max_length=255)
+    default_error_messages = {
+        'bad_code': _('Code is expired or invalid!')
+    }
+
+    def validate(self, attrs):
+        self.password_reset_code = attrs['password_reset_code']
+        password2 = attrs.pop('password2')
+        password = attrs['password']
+        if password2 != password:
+            raise serializers.ValidationError('Passwords didn\'t match!')
+        if password == User.password:
+            raise serializers.ValidationError('Password cant be previous!')
+        user = User.objects.get(password_reset_code=attrs['password_reset_code'])
+        user.set_password(password)
+        send_changed_pw_notification.delay(user.email,)
+        user.save()
+        return attrs

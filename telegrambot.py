@@ -7,7 +7,7 @@ import ast
 import json
 
 
-token = '6085985269:AAE9Ff9_7iUN0u9mOapNIItMAMG7eACDB6k'
+token = '6167877522:AAGjpyMAaWjOXyzCDdDClf_hYfCZLE4KVtk'
 bot = telebot.TeleBot(token)
 
 keyboard_start = types.ReplyKeyboardMarkup()

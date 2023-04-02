@@ -51,11 +51,11 @@ class UserManager(BaseUserManager):
 class CustomUser(AbstractUser):
     email = models.EmailField('email address', unique=True)
     password = models.CharField(max_length=255)
-    activation_code = models.CharField(max_length=255, blank=True)
+    activation_code = models.CharField(max_length=255, blank=True, null=True)
     username = models.CharField(max_length=30, unique=True)
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
-    profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True,
+    profile_picture = models.ImageField(upload_to='profile_pictures/',
                                         default='profile_pictures/default.png')
     profile_quote = models.CharField(max_length=255, default='Hey, I\'m new here!')
     is_active = models.BooleanField(

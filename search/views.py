@@ -20,15 +20,6 @@ class PostSearchView(APIView):
         return Response(serializer, status=200) if serializer \
             else Response({'msg': 'posts not found'}, status=204)
 
-    def post(self, request):
-        search_query = request.GET['search']
-        # print(search_query)
-        post = Post.objects.filter(title__icontains=search_query)
-        # print(post)
-        serializer = PostSearchListSerializer(instance=post, many=True, context=request.user).data
-        return Response(serializer, status=200) if serializer \
-            else Response({'msg': 'posts not found'}, status=204)
-
 
 class UserSearchView(APIView):
     def get(self, request):

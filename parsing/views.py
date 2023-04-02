@@ -1,6 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.http import HttpResponse
-from django.shortcuts import render
 from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -11,8 +9,6 @@ from post.models import Post
 from post.serializers import PostSerializer
 
 from datetime import datetime
-
-# Create your views here.
 
 
 User = get_user_model()

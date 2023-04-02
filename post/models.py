@@ -32,4 +32,3 @@ class PostImages(models.Model):
     def save(self, *args, **kwargs):
         self.title = self.generate_name()
         return super(PostImages, self).save(*args, **kwargs)
-

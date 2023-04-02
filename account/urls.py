@@ -32,6 +32,6 @@ urlpatterns = [
     path('favorites/', FavoriteListView.as_view()),
     path('balance/', views.BalanceView.as_view()),
     path('balance/topup/', views.TopUpBalanceView.as_view()),
-
+    path('restore-account/', views.RestoreAccountView.as_view()),
 ]
 

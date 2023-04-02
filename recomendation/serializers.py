@@ -2,9 +2,9 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from account.serializers import UserListSerializer
-from post.models import Post
 from post.serializers import PostRecommendSerializer
 from recomendation.models import Recommendation
+
 
 User = get_user_model()
 

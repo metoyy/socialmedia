@@ -20,7 +20,6 @@ class LikeSerializer(serializers.ModelSerializer):
         return attrs
 
 
-
 class LikeListSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.id')
     owner_username = serializers.ReadOnlyField(source='owner.username')

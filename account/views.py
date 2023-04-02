@@ -49,6 +49,25 @@ class ActivationView(GenericAPIView):
         return Response({'msg': 'Successfully activated!'}, status=200)
 
 
+class RestoreAccountView(APIView):
+    permission_classes = permissions.AllowAny,
+
+    def get(self, request):
+        try:
+            email = request.data['email']
+        except KeyError:
+            return Response({'msg': 'Provide an email!'}, status=400)
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'msg': 'User with that email not found!'}, status=404)
+        code = str(uuid.uuid4())
+        user.activation_code = code
+        user.save()
+        send_confirmation_mail.delay(email, code)
+        return Response({'msg': 'Confirmation email sent!'})
+
+
 class LoginView(TokenObtainPairView):
     permission_classes = (permissions.AllowAny,)
 

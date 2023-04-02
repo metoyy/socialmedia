@@ -21,7 +21,7 @@ urlpatterns = [
          views.FriendListView.as_view()),
     path('friends/<int:pk>/', views.FriendDeleteView.as_view()),
 
-    path('send_friend_request/<int:pk>/',
+    path('<int:pk>/send_friend_request/',
          views.SendFriendRequestView.as_view(),
          name='send friend request'),
     path('friend_requests/',

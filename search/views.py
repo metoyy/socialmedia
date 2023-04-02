@@ -18,7 +18,7 @@ class PostSearchView(APIView):
         post = Post.objects.filter(title__icontains=search_query)
         serializer = PostSearchListSerializer(instance=post, many=True, context=request.user).data
         return Response(serializer, status=200) if serializer \
-            else Response({'msg': 'results not found'}, status=204)
+            else Response({'msg': 'posts not found'}, status=204)
 
 
 class UserSearchView(APIView):
@@ -27,4 +27,4 @@ class UserSearchView(APIView):
         user = User.objects.filter(username__icontains=search_query)
         serializer = UserListSerializer(instance=user, many=True).data
         return Response(serializer, status=200) if serializer \
-            else Response({'msg': 'results not found'}, status=204)
+            else Response({'msg': 'users not found'}, status=204)

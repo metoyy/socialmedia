@@ -1,20 +1,20 @@
 # socialmedia
 
 # database
-DB_NAME=social_media
-DB_USER=metoy
-DB_PASSWORD=1
-DB_HOST=localhost
-DB_PORT=5432
+DB_NAME=
+DB_USER=
+DB_PASSWORD=
+DB_HOST=
+DB_PORT=
 
 # settings
-DJ_SECRET='django-insecure-%pn5w#b1(mr091^8gi=7@5f(qk7%+mf^fo=20ovf7usq__)#uq'
-ALLOWED_HOSTS=localhost 127.0.0.1
+DJ_SECRET=
+ALLOWED_HOSTS=
 DEBUG=True
 
 # email
-EMAIL_USER=shop.api.email@gmail.com
-EMAIL_PASSWORD=vbyapkcjvhwowlgm
+EMAIL_USER=
+EMAIL_PASSWORD=
 
 # deployed
-SERVER_HOST=127.0.0.1
+SERVER_HOST=

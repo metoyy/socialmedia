@@ -72,6 +72,7 @@ class CustomUser(AbstractUser):
     recommendations = models.ForeignKey('recomendation.Recommendation', related_name='owner',
                                         on_delete=models.SET_NULL, null=True, blank=True)
     balance = models.DecimalField(max_digits=100, decimal_places=2, default=0.00)
+    discord_tag = models.CharField(max_length=255, null=True, blank=True)
     objects = UserManager()
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

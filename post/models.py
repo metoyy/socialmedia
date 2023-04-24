@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from category.models import Category, SubCategory
+
 User = get_user_model()
 
 
@@ -12,6 +14,11 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     favorite = models.ManyToManyField(User, related_name='favorite_posts', blank=True)
+    category = models.ForeignKey(Category, related_name='posts', on_delete=models.SET_NULL, null=True)
+    sub_category = models.ForeignKey(SubCategory, related_name='posts', on_delete=models.SET_NULL,
+                                     null=True, blank=True)
+    phone_number = models.CharField(max_length=255, blank=True)
+    members = models.ManyToManyField(User, related_name='post_members', blank=True)
 
     def __str__(self):
         return f'{self.owner} - {self.title[:50]}'

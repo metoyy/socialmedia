@@ -23,3 +23,5 @@ celery==5.2.7
 
 pyTelegramBotAPI
 bs4
+
+django-cors-headers
